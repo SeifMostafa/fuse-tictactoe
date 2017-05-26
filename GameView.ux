@@ -1,0 +1,22 @@
+<Panel ux:Class="GameView">
+	<JavaScript File="game.js"/>
+
+	<Text Alignment="TopRight" Value="Turn: {curTurn}"/>
+	
+	<Panel BoxSizing="FillAspect" Aspect="1">
+		<!-- Create the grid using simple rectangles -->
+		<Rectangle Color="#000" X="33.3%" Y="0%" Width="2%" Height="100%"/>
+		<Rectangle Color="#000" X="66.6%" Y="0%" Width="2%" Height="100%"/>
+		<Rectangle Color="#000" X="0%" Y="33.3%" Width="100%" Height="2%"/>
+		<Rectangle Color="#000" X="0%" Y="66.6%" Width="100%" Height="2%"/>
+		
+		<!-- show each cell -->
+		<Grid ColumnCount="{numCols}" RowCount="{numRows}">
+			<Each Items="{grid}">
+				<Panel HitTestMode="LocalBounds" Clicked="{cellClicked}">
+					<Text Value="{state}" FontSize="50" Alignment="Center"/>
+				</Panel>
+			</Each>
+		</Grid>
+	</Panel>
+</Panel>

@@ -1,7 +1,15 @@
 <Panel ux:Class="GameView">
 	<JavaScript File="game.js"/>
 
-	<Text Alignment="TopRight" Value="Turn: {curTurn}"/>
+	<Text Alignment="TopRight" Value="Turn: {game.curTurn}"/>
+	<WhileTrue Value="{game.gameOver}">
+		<StackPanel Padding="20" Alignment="Center">
+			<Rectangle Layer="Background" CornerRadius="20" Color="#EEE"
+				StrokeWidth="2" StrokeColor="#444"/>
+			<Text Alignment="Center" Value="Game Over" FontSize="30"/>
+			<Text Value="New Game"  Clicked="{restart}" FontSize="20"/>
+		</StackPanel>
+	</WhileTrue>
 	
 	<Panel BoxSizing="FillAspect" Aspect="1">
 		<!-- Create the grid using simple rectangles -->
@@ -11,8 +19,8 @@
 		<Rectangle Color="#000" X="0%" Y="66.6%" Width="100%" Height="2%"/>
 		
 		<!-- show each cell -->
-		<Grid ColumnCount="{numCols}" RowCount="{numRows}">
-			<Each Items="{grid}">
+		<Grid ColumnCount="{game.size}" RowCount="{game.size}">
+			<Each Items="{game.grid}">
 				<Panel HitTestMode="LocalBounds" Clicked="{cellClicked}">
 					<Text Value="{state}" FontSize="50" Alignment="Center"/>
 				</Panel>

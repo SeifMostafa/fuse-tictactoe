@@ -18,14 +18,14 @@
 	</Panel>
 	
 	<WhileTrue Value="{game.gameOver}">
-		<StackPanel Padding="20" Alignment="Center">
+		<StackPanel Padding="20" X="50%" Y="33%" Anchor="50%,50%">
 			<Rectangle Layer="Background" CornerRadius="20" Color="#EEE"
 				StrokeWidth="2" StrokeColor="#444"/>
 			<Text Alignment="Center" Value="Winner" FontSize="30"/>
 			
 			<Match String="{game.winner}">
 				<Case String="">
-					<Text Value="Tied" FontSize="40" Color="#FAA"/>
+					<Text Value="Tied" FontSize="40" Color="#FAA" Alignment="Center"/>
 				</Case>
 				<Case String="o">
 					<markO Color="#678" Margin="20" Height="50" Width="50" Alignment="Center"/>
@@ -42,7 +42,7 @@
 			</Panel>
 			
 			<AddingAnimation>
-				<Scale Factor="0.8" Duration="0.3" Easing="BackInOut"/>
+				<Scale Factor="0.8" Duration="0.5" Easing="BackInOut"/>
 			</AddingAnimation>
 		</StackPanel>
 	</WhileTrue>
@@ -73,7 +73,11 @@
 					</Match>
 					
 					<WhileTrue Value="{win}">
-						<Change cell.Color="#DFD" Duration="0.2"/>
+						<Rectangle Color="#DFD" ux:Name="back">
+							<AddingAnimation>
+								<Change back.Color="#FFF" Duration="0.2"/>
+							</AddingAnimation>
+						</Rectangle>
 					</WhileTrue>
 				</Panel>
 			</Each>

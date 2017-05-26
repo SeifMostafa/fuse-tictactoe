@@ -1,5 +1,5 @@
 <App>
 	<ClientPanel>
-		<GameView/>
+		<GameView Margin="10"/>
 	</ClientPanel>
 </App>

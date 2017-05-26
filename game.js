@@ -12,8 +12,9 @@ var winHow = {
 	None: 0,
 	Row: 1,
 	Col: 2,
-	Diagonal: 3,
-	Tie: 4,
+	DiagDown: 3,
+	DiagUp: 4,
+	Tie: 5,
 }
 
 /* Records the position and state of the cells in the grid */
@@ -67,6 +68,10 @@ var game = new function() {
 	
 	/* The current player is attempting to mark this cell */
 	this.cellClicked = function(cell) {
+		if (game.gameOver.value) {
+			return
+		}
+		
 		if (cell.state.value != cellState.None) {
 			return
 		}
@@ -87,7 +92,7 @@ var game = new function() {
 		var win = _game.checkWin()
 		//no win, but no cells left, thus a tie
 		if (win.how == winHow.None && _game.used == (_game.size * _game.size)) {
-			win = { how: winHow.Tied }
+			win = { how: winHow.Tied, winner: cellState.None }
 		}
 		
 		if (win.how != winHow.None) {
@@ -100,36 +105,43 @@ var game = new function() {
 	/* Check if a row, column or diagonal is all in one state (it wins) */
 	this.checkWin = function() {
 		for (var y=0; y < _game.size; ++y) {
-			var state = _game.getCell(0,y).state.value
-			if (state == cellState.None) {
-				continue;
-			}
-			
-			var okay = true
-			for (var x =1; x < _game.size; ++x) {
-				okay = okay && _game.getCell(x,y).state.value == state
-			}
-			if (okay) { 
-				return { how: winHow.Row, y: y, x: 0, winner: state }
+			var winner = _game.checkWinLine(0,y, 1,0)
+			if (winner != cellState.None) {
+				return { how: winHow.Row, y: y, x: 0, winner: winner }
 			}
 		}
 		
 		for (var x = 0; x < _game.size; ++x) { 
-			var state = _game.getCell(x,0).state.value
-			if (state == cellState.None) {
-				continue;
-			}
-			
-			var okay = true
-			for (var y = 1; y < _game.size; ++y) {
-				okay = okay && _game.getCell(x,y).state.value == state
-			}
-			if (okay) {
-				return { how: winHow.Col, x: x, y: 0, winner: state }
+			var winner = _game.checkWinLine(x,0, 0,1)
+			if (winner != cellState.None) {
+				return { how: winHow.Col, y: 0, x: x, winner: winner }
 			}
 		}
 		
+		var winner = _game.checkWinLine(0,0, 1,1)
+		if (winner != cellState.None) {
+			return { how: winHow.DiagDown, y:0, x:0, winner: winner }
+		}
+		
+		winner = _game.checkWinLine(0,_game.size-1, 1,-1)
+		if (winner != cellState.None) {
+			return { how: winHow.DiagUp, x:0, y:_game.size-1, winner: winner }
+		}
+		
 		return { how: winHow.None }
+	}
+	
+	/** 
+		Check if the position at (x0,y0) along line (stepX,stepY) wins 
+		Returns the winner as a cellState
+	*/
+	this.checkWinLine = function(x0,y0, stepX, stepY) {
+		var state = _game.getCell(x0,y0).state.value
+		var okay = true
+		for (var s = 1; s < _game.size; ++s) {
+			okay = okay && _game.getCell( x0 + stepX * s, y0 + stepY * s).state.value == state
+		}
+		return okay ? state : cellState.None
 	}
 	
 	/* set Cell.win = true on those cells in the winning selection */
@@ -141,6 +153,14 @@ var game = new function() {
 		} else if (win.how == winHow.Row) {
 			for (var x=0; x < _game.size; ++x) {
 				_game.getCell(x,win.y).win.value = true
+			}
+		} else if (win.how == winHow.DiagDown) {
+			for (var s=0; s < _game.size; ++s) {
+				_game.getCell(win.x+s,win.y+s).win.value = true
+			}
+		} else if (win.how == winHow.DiagUp) {
+			for (var s=0; s < _game.size; ++s) {
+				_game.getCell(win.x+s,win.y-s).win.value = true
 			}
 		}
 	}

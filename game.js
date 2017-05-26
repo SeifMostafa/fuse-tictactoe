@@ -2,9 +2,9 @@ var Observable = require("FuseJS/Observable")
 
 /* An enum of the cell states */
 var cellState = {
-	None: 0,
-	O: 1,
-	X: 2,
+	None: "",
+	O: "o",
+	X: "x",
 }
 
 /* An enum of win conditions */
@@ -19,13 +19,17 @@ var winHow = {
 /* Records the position and state of the cells in the grid */
 function Cell( x, y ) {
 	var _this = this
+	//the position of the cell (cell in "grid" must be rowmajor order for the display)
 	this.x = x
 	this.y = y
+	//who's marked the cell
 	this.state = Observable(cellState.None)
+	//true if this cell is part of the winning cells
 	this.win = Observable(false)
 	
 	this.reset = function() {
 		_this.state.value = cellState.None
+		_this.win.value = false
 	}
 }
 
@@ -38,6 +42,7 @@ var game = new function() {
 	this.size = 3
 	this.used = 0
 	this.gameOver = Observable(false)
+	this.winner = Observable("")
 
 	for (var y=0; y < _game.size; ++y ) {
 		for (var x=0; x < _game.size ; ++x ) {
@@ -45,6 +50,7 @@ var game = new function() {
 		}
 	}
 	
+	/* Restore the game to the starting state */
 	this.reset = function() {
 		for (var i=0; i < game.grid.length; ++i) {
 			_game.grid.getAt(i).reset()
@@ -59,6 +65,7 @@ var game = new function() {
 		return _game.grid.getAt(x + y * _game.size)
 	}
 	
+	/* The current player is attempting to mark this cell */
 	this.cellClicked = function(cell) {
 		if (cell.state.value != cellState.None) {
 			return
@@ -69,22 +76,28 @@ var game = new function() {
 		_game.endTurn();
 	}
 	
+	/* The turn of the current player is over */
 	this.endTurn = function() {
 		_game.curTurn.value = _game.curTurn.value == cellState.O ? cellState.X : cellState.O
 		_game.checkEnd()
 	}
 	
+	/* Check if the game is over, due to win or tie */
 	this.checkEnd = function() {
 		var win = _game.checkWin()
+		//no win, but no cells left, thus a tie
 		if (win.how == winHow.None && _game.used == (_game.size * _game.size)) {
 			win = { how: winHow.Tied }
 		}
 		
 		if (win.how != winHow.None) {
 			_game.gameOver.value = true
+			_game.markWin(win)
+			_game.winner.value = win.winner
 		}
 	}
 	
+	/* Check if a row, column or diagonal is all in one state (it wins) */
 	this.checkWin = function() {
 		for (var y=0; y < _game.size; ++y) {
 			var state = _game.getCell(0,y).state.value
@@ -97,7 +110,7 @@ var game = new function() {
 				okay = okay && _game.getCell(x,y).state.value == state
 			}
 			if (okay) { 
-				return { how: winHow.Row, y: y, x: 0 }
+				return { how: winHow.Row, y: y, x: 0, winner: state }
 			}
 		}
 		
@@ -112,11 +125,24 @@ var game = new function() {
 				okay = okay && _game.getCell(x,y).state.value == state
 			}
 			if (okay) {
-				return { how: winHow.Col, x: x, y: 0 }
+				return { how: winHow.Col, x: x, y: 0, winner: state }
 			}
 		}
 		
 		return { how: winHow.None }
+	}
+	
+	/* set Cell.win = true on those cells in the winning selection */
+	this.markWin = function(win) {
+		if (win.how == winHow.Col ) {
+			for (var y=0; y < _game.size; ++y) {
+				_game.getCell(win.x, y).win.value = true
+			}
+		} else if (win.how == winHow.Row) {
+			for (var x=0; x < _game.size; ++x) {
+				_game.getCell(x,win.y).win.value = true
+			}
+		}
 	}
 }
 
